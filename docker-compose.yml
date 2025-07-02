@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  backend:
+    container_name: asset_backend
+    build: ./Backend
+    ports:
+      - "3064:3064"
+    depends_on:
+      - postgres
+    networks:
+      - asset_net
+    environment:
+      - PGUSER=postgres
+      - PGPASSWORD=admin123
+      - PGHOST=postgres
+      - PGPORT=5432
+      - PGDATABASE=asset_management
+
+  frontend:
+    container_name: asset_frontend
+    build: ./Frontend
+    ports:
+      - "8111:80"
+    depends_on:
+      - backend
+    networks:
+      - asset_net
+
+  hr:
+    container_name: asset_hr
+    build: ./HR
+    ports:
+      - "8112:80"
+    depends_on:
+      - backend
+    networks:
+      - asset_net
+
+  request:
+    container_name: asset_request
+    build: ./Request
+    ports:
+      - "8113:80"
+    depends_on:
+      - backend
+    networks:
+      - asset_net
+
+  postgres:
+    container_name: asset_postgres
+    image: postgres:13
+    ports:
+      - "5464:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: asset_management
+    volumes:
+      - pgdata12:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - asset_net
+
+volumes:
+  pgdata12:
+
+networks:
+  asset_net:
+    driver: bridge
+
